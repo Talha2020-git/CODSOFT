@@ -1,0 +1,90 @@
+import json
+
+class ToDoApp:
+    def __init__(self, storage="todo_data.json"):
+        self.storage = storage
+        self.tasks = self.load_tasks()
+
+    def load_tasks(self):
+        """Load tasks from the storage file."""
+        try:
+            with open(self.storage, "r") as file:
+                return json.load(file)
+        except (FileNotFoundError, json.JSONDecodeError):
+            return []
+
+    def save_tasks(self):
+        """Save tasks to the storage file."""
+        with open(self.storage, "w") as file:
+            json.dump(self.tasks, file)
+
+    def add_task(self, description):
+        """Add a new task."""
+        self.tasks.append({"description": description, "done": False})
+        self.save_tasks()
+        print(f"Added: {description}")
+
+    def show_tasks(self):
+        """Display all tasks."""
+        if not self.tasks:
+            print("No tasks to show.")
+            return
+        for i, task in enumerate(self.tasks, 1):
+            status = "Done" if task["done"] else "Pending"
+            print(f"{i}. {task['description']} [{status}]")
+
+    def complete_task(self, task_no):
+        """Mark a task as done."""
+        if 0 < task_no <= len(self.tasks):
+            self.tasks[task_no - 1]["done"] = True
+            self.save_tasks()
+            print(f"Task {task_no} marked as done.")
+        else:
+            print("Invalid task number.")
+
+    def remove_task(self, task_no):
+        """Remove a task."""
+        if 0 < task_no <= len(self.tasks):
+            removed = self.tasks.pop(task_no - 1)
+            self.save_tasks()
+            print(f"Removed: {removed['description']}")
+        else:
+            print("Invalid task number.")
+
+def main():
+    app = ToDoApp()
+    menu = """
+    1. Add Task
+    2. Show Tasks
+    3. Complete Task
+    4. Remove Task
+    5. Exit
+    """
+    while True:
+        print(menu)
+        choice = input("Select an option: ").strip()
+        if choice == "1":
+            task = input("Enter the task description: ").strip()
+            app.add_task(task)
+        elif choice == "2":
+            app.show_tasks()
+        elif choice == "3":
+            try:
+                task_no = int(input("Enter task number to complete: "))
+                app.complete_task(task_no)
+            except ValueError:
+                print("Invalid input, please enter a number.")
+        elif choice == "4":
+            try:
+                task_no = int(input("Enter task number to remove: "))
+                app.remove_task(task_no)
+            except ValueError:
+                print("Invalid input, please enter a number.")
+        elif choice == "5":
+            print("Exiting... Have a productive day!")
+            break
+        else:
+            print("Invalid choice, try again.")
+
+if __name__ == "__main__":
+    main()
